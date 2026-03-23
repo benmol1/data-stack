@@ -1,0 +1,23 @@
+version: 2
+
+models:
+  - name: mart_pokemon_by_type
+    description: >
+      One row per primary type. Aggregated base stats and legendary counts
+      across all Pokémon forms.
+    columns:
+      - name: primary_type
+        description: Primary elemental type — grain of this table
+        tests:
+          - unique
+          - not_null
+
+      - name: pokemon_count
+        tests:
+          - not_null
+      - name: avg_base_stat_total
+        tests:
+          - not_null
+      - name: max_base_stat_total
+        tests:
+          - not_null

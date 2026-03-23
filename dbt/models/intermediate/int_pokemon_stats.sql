@@ -21,7 +21,11 @@ with_derived as (
 
         -- Whether the Pokémon has a secondary type
         secondary_type is not null
-            as is_dual_type
+            as is_dual_type,
+
+        -- Mega-evolved forms are identified by "Mega" appearing in the name
+        pokemon_name like '%Mega %'
+            as is_mega
 
     from stg
 

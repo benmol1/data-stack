@@ -1,0 +1,23 @@
+version: 2
+
+models:
+  - name: mart_pokemon_by_generation
+    description: >
+      One row per generation. Tracks stat power and legendary density
+      introduced in each generation.
+    columns:
+      - name: generation
+        description: Generation number — grain of this table
+        tests:
+          - unique
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [1, 2, 3, 4, 5, 6]
+
+      - name: pokemon_count
+        tests:
+          - not_null
+      - name: avg_base_stat_total
+        tests:
+          - not_null

@@ -1,0 +1,37 @@
+version: 2
+
+models:
+  - name: int_pokemon_stats
+    description: >
+      Extends stg_pokemon with derived stat columns. One row per Pokémon form.
+    columns:
+      - name: pokemon_name
+        description: Unique name for each Pokémon form
+        tests:
+          - unique
+          - not_null
+
+      - name: base_stat_total
+        description: Sum of all six base stats
+        tests:
+          - not_null
+
+      - name: total_offense
+        description: Attack + Special Attack
+        tests:
+          - not_null
+
+      - name: total_defense
+        description: Defense + Special Defense
+        tests:
+          - not_null
+
+      - name: is_dual_type
+        description: True if the Pokémon has a secondary type
+        tests:
+          - not_null
+
+      - name: is_mega
+        description: True if the Pokémon is a mega-evolved form
+        tests:
+          - not_null

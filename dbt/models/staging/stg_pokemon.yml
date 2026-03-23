@@ -1,0 +1,72 @@
+version: 2
+
+models:
+  - name: stg_pokemon
+    description: >
+      Cleaned and typed Pokémon records sourced from the raw CSV. One row per
+      Pokémon form (base or mega-evolved). Pokédex number (pokemon_id) is not
+      unique because mega forms share an ID with their base form.
+    columns:
+      - name: pokemon_name
+        description: Unique name for each Pokémon form
+        tests:
+          - unique
+          - not_null
+
+      - name: pokemon_id
+        description: Pokédex number — not unique across forms
+        tests:
+          - not_null
+
+      - name: primary_type
+        description: Primary elemental type
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [Bug, Dark, Dragon, Electric, Fairy, Fighting, Fire,
+                         Flying, Ghost, Grass, Ground, Ice, Normal, Poison,
+                         Psychic, Rock, Steel, Water]
+
+      - name: secondary_type
+        description: Secondary elemental type — null for single-typed Pokémon
+        tests:
+          - accepted_values:
+              arguments:
+                values: [Bug, Dark, Dragon, Electric, Fairy, Fighting, Fire,
+                         Flying, Ghost, Grass, Ground, Ice, Normal, Poison,
+                         Psychic, Rock, Steel, Water]
+              config:
+                where: "secondary_type is not null"
+
+      - name: hp
+        tests:
+          - not_null
+      - name: attack
+        tests:
+          - not_null
+      - name: defense
+        tests:
+          - not_null
+      - name: special_attack
+        tests:
+          - not_null
+      - name: special_defense
+        tests:
+          - not_null
+      - name: speed
+        tests:
+          - not_null
+
+      - name: generation
+        description: Generation the Pokémon was introduced in
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [1, 2, 3, 4, 5, 6]
+
+      - name: is_legendary
+        description: True if the Pokémon is legendary or mythical
+        tests:
+          - not_null

@@ -9,6 +9,7 @@ comparison as (
 
     select
         is_legendary,
+        is_mega, 
         count(*)                            as pokemon_count,
         round(avg(base_stat_total), 1)      as avg_base_stat_total,
         round(avg(hp), 1)                   as avg_hp,
@@ -21,7 +22,7 @@ comparison as (
         round(avg(total_defense), 1)        as avg_total_defense
 
     from pokemon
-    group by is_legendary
+    group by is_legendary, is_mega
 
 )
 

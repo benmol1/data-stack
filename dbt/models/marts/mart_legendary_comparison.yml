@@ -1,0 +1,22 @@
+version: 2
+
+models:
+  - name: mart_legendary_comparison
+    description: >
+      One row per (is_legendary, is_mega) combination. Head-to-head average
+      stat comparison across those groupings.
+    columns:
+      - name: is_legendary
+        tests:
+          - not_null
+
+      - name: is_mega
+        tests:
+          - not_null
+
+      - name: pokemon_count
+        tests:
+          - not_null
+      - name: avg_base_stat_total
+        tests:
+          - not_null
