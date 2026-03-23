@@ -1,0 +1,39 @@
+version: 2
+
+sources:
+  - name: raw
+    description: Raw input files loaded directly from disk via DuckDB
+    tables:
+      - name: pokemon_data
+        description: >
+          Raw Pokémon dataset covering generations 1–6. Each row is a
+          Pokémon form (base or mega-evolved) with its base stats, typing,
+          generation, and legendary flag.
+        meta:
+          # Path is relative to where `dbt run` is executed (the dbt/ directory)
+          external_location: "read_csv_auto('../inputs/raw/PokemonData.csv', header=true)"
+        columns:
+          - name: Num
+            description: Pokédex number (shared across forms of the same species)
+          - name: Name
+            description: Pokémon name, including form suffix for megas/variants
+          - name: Type1
+            description: Primary type
+          - name: Type2
+            description: Secondary type (empty string when single-typed)
+          - name: HP
+            description: Base HP stat
+          - name: Attack
+            description: Base Attack stat
+          - name: Defense
+            description: Base Defense stat
+          - name: SpAtk
+            description: Base Special Attack stat
+          - name: SpDef
+            description: Base Special Defense stat
+          - name: Speed
+            description: Base Speed stat
+          - name: Generation
+            description: Generation the Pokémon was introduced in (1–6)
+          - name: Legendary
+            description: "'TRUE' if the Pokémon is legendary or mythical"

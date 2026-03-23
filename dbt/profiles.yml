@@ -1,0 +1,8 @@
+data_stack:
+  target: dev
+  outputs:
+    dev:
+      type: duckdb
+      # Database file is created in the dbt/ directory
+      path: data_stack.duckdb
+      threads: 4
