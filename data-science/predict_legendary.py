@@ -4,6 +4,9 @@ Data source: int_pokemon_stats (dbt intermediate model in data_stack.duckdb)
 
 Run from the repo root:
     python data-science/predict_legendary.py
+
+Experiment: base_stat_total excluded from features to test whether the model
+can still identify legendaries from the individual stats alone.
 """
 
 import os
@@ -41,7 +44,8 @@ print(f"Legendary: {df['is_legendary'].sum()}  |  Non-legendary: {(~df['is_legen
 # ---------------------------------------------------------------------------
 NUMERIC_FEATURES = [
     "hp", "attack", "defense", "special_attack", "special_defense", "speed",
-    "base_stat_total", "total_offense", "total_defense", "generation",
+    "total_offense", "total_defense", "generation",
+    # base_stat_total excluded — experiment to test model without this dominant feature
 ]
 BOOL_FEATURES = ["is_dual_type", "is_mega"]
 CAT_FEATURES  = ["primary_type"]       # secondary_type is sparse; is_dual_type captures its presence
