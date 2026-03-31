@@ -2,3 +2,4 @@ dbt-duckdb>=1.8.0
 scikit-learn>=1.4.0
 pandas>=2.0.0
 matplotlib>=3.8.0
+understatapi>=0.9.0

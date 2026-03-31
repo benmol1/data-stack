@@ -8,7 +8,6 @@ Run from the repo root:
 
 import os
 import duckdb
-import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from sklearn.ensemble import GradientBoostingClassifier
@@ -34,17 +33,29 @@ con.close()
 os.chdir(_orig_dir)
 
 print(f"Loaded {len(df)} rows from int_pokemon_stats")
-print(f"Legendary: {df['is_legendary'].sum()}  |  Non-legendary: {(~df['is_legendary']).sum()}\n")
+print(
+    f"Legendary: {df['is_legendary'].sum()}  |  Non-legendary: {(~df['is_legendary']).sum()}\n"
+)
 
 # ---------------------------------------------------------------------------
 # 2. Feature selection
 # ---------------------------------------------------------------------------
 NUMERIC_FEATURES = [
-    "hp", "attack", "defense", "special_attack", "special_defense", "speed",
-    "base_stat_total", "total_offense", "total_defense", "generation",
+    "hp",
+    "attack",
+    "defense",
+    "special_attack",
+    "special_defense",
+    "speed",
+    "base_stat_total",
+    "total_offense",
+    "total_defense",
+    "generation",
 ]
 BOOL_FEATURES = ["is_dual_type", "is_mega"]
-CAT_FEATURES  = ["primary_type"]       # secondary_type is sparse; is_dual_type captures its presence
+CAT_FEATURES = [
+    "primary_type"
+]  # secondary_type is sparse; is_dual_type captures its presence
 
 TARGET = "is_legendary"
 
@@ -58,22 +69,27 @@ y = df[TARGET].astype(int)
 # ---------------------------------------------------------------------------
 preprocessor = ColumnTransformer(
     transformers=[
-        ("num",  "passthrough",                    NUMERIC_FEATURES + BOOL_FEATURES),
-        ("cat",  OneHotEncoder(handle_unknown="ignore"), CAT_FEATURES),
+        ("num", "passthrough", NUMERIC_FEATURES + BOOL_FEATURES),
+        ("cat", OneHotEncoder(handle_unknown="ignore"), CAT_FEATURES),
     ]
 )
 
-model = Pipeline([
-    ("prep",  preprocessor),
-    ("clf",   GradientBoostingClassifier(
-        n_estimators=300,
-        max_depth=4,
-        learning_rate=0.05,
-        subsample=0.8,
-        min_samples_leaf=3,
-        random_state=42,
-    )),
-])
+model = Pipeline(
+    [
+        ("prep", preprocessor),
+        (
+            "clf",
+            GradientBoostingClassifier(
+                n_estimators=300,
+                max_depth=4,
+                learning_rate=0.05,
+                subsample=0.8,
+                min_samples_leaf=3,
+                random_state=42,
+            ),
+        ),
+    ]
+)
 
 # ---------------------------------------------------------------------------
 # 4. Train / test split (80/20, stratified to preserve class balance)
@@ -91,7 +107,9 @@ model.fit(X_train, y_train)
 y_pred = model.predict(X_test)
 
 print("=== Classification report (test set) ===")
-print(classification_report(y_test, y_pred, target_names=["Non-legendary", "Legendary"]))
+print(
+    classification_report(y_test, y_pred, target_names=["Non-legendary", "Legendary"])
+)
 
 # ---------------------------------------------------------------------------
 # 6. Feature importances
@@ -123,9 +141,18 @@ test_df["predicted_legendary"] = y_pred.astype(bool)
 misclassified = test_df[test_df["is_legendary"] != test_df["predicted_legendary"]]
 
 DISPLAY_COLS = [
-    "pokemon_name", "primary_type", "secondary_type",
-    "hp", "attack", "defense", "special_attack", "special_defense", "speed",
-    "base_stat_total", "is_legendary", "predicted_legendary",
+    "pokemon_name",
+    "primary_type",
+    "secondary_type",
+    "hp",
+    "attack",
+    "defense",
+    "special_attack",
+    "special_defense",
+    "speed",
+    "base_stat_total",
+    "is_legendary",
+    "predicted_legendary",
 ]
 print(f"\n=== Misclassified Pokémon ({len(misclassified)}) ===")
 print(misclassified[DISPLAY_COLS].to_string(index=False))
