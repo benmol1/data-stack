@@ -152,7 +152,7 @@ axes[1].set_title("Top 15 feature importances")
 axes[1].tick_params(axis="y", labelsize=9)
 
 plt.tight_layout()
-plot_path = os.path.join(os.path.dirname(__file__), "legendary_model.png")
+plot_path = os.path.join(os.path.dirname(__file__), "outputs\legendary_model.png")
 plt.savefig(plot_path, dpi=150)
 print(f"\nPlot saved to {plot_path}")
 plt.show()
