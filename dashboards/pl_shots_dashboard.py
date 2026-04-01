@@ -95,6 +95,36 @@ def draw_half_pitch(ax, lw=1.2):
 
 
 # ---------------------------------------------------------------------------
+# Team colours (primary/representative colour for each PL club)
+# ---------------------------------------------------------------------------
+TEAM_COLOURS = {
+    "Arsenal":                  "#EF0107",  # scarlet red
+    "Aston Villa":              "#670E36",  # claret
+    "Bournemouth":              "#000000",  # black (red-black stripes)
+    "Brentford":                "#FF5500",  # orange-red (distinct from pure reds)
+    "Brighton":                 "#0057B8",  # blue
+    "Burnley":                  "#6C1D45",  # dark claret/purple
+    "Chelsea":                  "#034694",  # Chelsea blue
+    "Crystal Palace":           "#1B458F",  # Palace blue
+    "Everton":                  "#003399",  # royal blue
+    "Fulham":                   "#808080",  # grey (white-kit club)
+    "Ipswich":                  "#3A64A3",  # Ipswich blue
+    "Leeds":                    "#FFCD00",  # yellow
+    "Leicester":                "#003090",  # Leicester blue
+    "Liverpool":                "#C8102E",  # Liverpool red
+    "Luton":                    "#F78F1E",  # orange
+    "Manchester City":          "#6CABDD",  # sky blue
+    "Manchester United":        "#DA291C",  # red
+    "Newcastle United":         "#241F20",  # near-black
+    "Nottingham Forest":        "#DD0000",  # Forest red
+    "Sheffield United":         "#EE2737",  # Blades red
+    "Southampton":              "#D71920",  # Saints red
+    "Tottenham":                "#132257",  # navy
+    "West Ham":                 "#7A263A",  # West Ham claret
+    "Wolverhampton Wanderers":  "#FDB913",  # gold
+}
+
+# ---------------------------------------------------------------------------
 # Tabs
 # ---------------------------------------------------------------------------
 tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8 = st.tabs([
@@ -616,6 +646,9 @@ with tab8:
         pos_str = ordinal(pos) if not np.isnan(pos) else "?"
         return f"{team} ({gpg:.1f} gpg, {pos_str})"
 
+    # Colour each bubble by team identity; fall back to grey for unknown clubs
+    bubble_colours = [TEAM_COLOURS.get(t, "#888888") for t in ts.index]
+
     # ── Chart 1: Four-quadrant — attack quality vs defensive quality ─────────
     st.markdown("### Shot quality: attack vs defence")
     st.caption(
@@ -631,7 +664,7 @@ with tab8:
     fig, ax = plt.subplots(figsize=(11, 7))
     ax.scatter(
         ts["xg_per_shot_against"], ts["xg_per_shot_for"],
-        s=ts["goals_per_match"] * 120, color="#1f77b4", alpha=0.7, zorder=3,
+        s=ts["goals_per_match"] * 120, color=bubble_colours, alpha=0.85, zorder=3,
     )
     for team, row in ts.iterrows():
         ax.annotate(
@@ -712,7 +745,7 @@ with tab8:
     fig, ax = plt.subplots(figsize=(11, 7))
     ax.scatter(
         ts["shots_per_match"], ts["xg_per_shot_for"],
-        s=ts["goals_per_match"] * 120, color="#ff7f0e", alpha=0.7, zorder=3,
+        s=ts["goals_per_match"] * 120, color=bubble_colours, alpha=0.85, zorder=3,
     )
     for team, row in ts.iterrows():
         ax.annotate(
