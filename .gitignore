@@ -14,3 +14,4 @@ venv/
 
 # VSC environment
 .vscode/
+.claude/settings.local.json
