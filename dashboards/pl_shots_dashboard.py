@@ -127,7 +127,7 @@ TEAM_COLOURS = {
 # ---------------------------------------------------------------------------
 # Tabs
 # ---------------------------------------------------------------------------
-tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8 = st.tabs([
+tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8, tab9 = st.tabs([
     "Season Overview",
     "Top Scorers",
     "xG Performance",
@@ -136,6 +136,7 @@ tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8 = st.tabs([
     "Shot Map",
     "Heatmap",
     "Team Analysis",
+    "Man Utd Deep Dive",
 ])
 
 # ── Tab 1: Season Overview ──────────────────────────────────────────────────
@@ -649,6 +650,68 @@ with tab8:
     # Colour each bubble by team identity; fall back to grey for unknown clubs
     bubble_colours = [TEAM_COLOURS.get(t, "#888888") for t in ts.index]
 
+    # ── Man Utd 2025/26-only overlay (always from full dataset) ─────────────
+    _mu_s = df_all[df_all["season"] == "2025/26"].copy()
+    _mu_s["shooting_team"]  = np.where(_mu_s["side"] == "h", _mu_s["home_team"], _mu_s["away_team"])
+    _mu_s["defending_team"] = np.where(_mu_s["side"] == "h", _mu_s["away_team"], _mu_s["home_team"])
+    _mu_atk = _mu_s[_mu_s["shooting_team"]  == "Manchester United"]
+    _mu_def = _mu_s[_mu_s["defending_team"] == "Manchester United"]
+    _mu_matches = (
+        _mu_s[_mu_s["home_team"] == "Manchester United"]["match_id"].nunique() +
+        _mu_s[_mu_s["away_team"] == "Manchester United"]["match_id"].nunique()
+    )
+    if len(_mu_atk) > 0 and len(_mu_def) > 0 and _mu_matches > 0:
+        mu25_xg_shot_for     = _mu_atk["xg"].sum() / len(_mu_atk)
+        mu25_xg_shot_against = _mu_def["xg"].sum() / len(_mu_def)
+        mu25_shots_per_match = len(_mu_atk) / _mu_matches
+        mu25_goals_per_match = (_mu_atk["result"] == "Goal").sum() / _mu_matches
+
+        # Derive 2025/26 league table position from shot data
+        _mu_goal_rows = _mu_s[_mu_s["result"] == "Goal"].copy()
+        _mu_goal_rows["home_goal"] = (_mu_goal_rows["side"] == "h")
+        _mu_goal_rows["away_goal"] = (_mu_goal_rows["side"] == "a")
+        _mu_match_scores = (
+            _mu_goal_rows.groupby("match_id")
+            .agg(home_goals=("home_goal", "sum"), away_goals=("away_goal", "sum"))
+            .reset_index()
+        )
+        _mu_fixtures = (
+            _mu_s.groupby(["match_id", "home_team", "away_team"]).size()
+            .reset_index()[["match_id", "home_team", "away_team"]]
+        )
+        _mu_mr = _mu_fixtures.merge(_mu_match_scores, on="match_id", how="left").fillna(0)
+        _mu_mr["home_pts"] = np.where(_mu_mr["home_goals"] > _mu_mr["away_goals"], 3,
+                             np.where(_mu_mr["home_goals"] == _mu_mr["away_goals"], 1, 0))
+        _mu_mr["away_pts"] = np.where(_mu_mr["away_goals"] > _mu_mr["home_goals"], 3,
+                             np.where(_mu_mr["home_goals"] == _mu_mr["away_goals"], 1, 0))
+        _mu_mr["home_gd"] = _mu_mr["home_goals"] - _mu_mr["away_goals"]
+        _mu_mr["away_gd"] = -_mu_mr["home_gd"]
+        _mu_tbl = (
+            _mu_mr.groupby("home_team").agg(pts=("home_pts", "sum"), gd=("home_gd", "sum"), gf=("home_goals", "sum")).rename_axis("team")
+            + _mu_mr.groupby("away_team").agg(pts=("away_pts", "sum"), gd=("away_gd", "sum"), gf=("away_goals", "sum")).rename_axis("team")
+        )
+        _mu_tbl["position"] = _mu_tbl[["pts", "gd", "gf"]].apply(
+            lambda col: col.rank(method="min", ascending=False)
+        ).mean(axis=1).astype(int)
+        mu25_position = int(_mu_tbl.loc["Manchester United", "position"]) if "Manchester United" in _mu_tbl.index else None
+
+        mu25_available = True
+    else:
+        mu25_available = False
+        mu25_position  = None
+
+    def plot_mu25_overlay(ax, x, y):
+        pos_str = ordinal(mu25_position) if mu25_position is not None else "?"
+        ax.scatter(x, y, s=max(mu25_goals_per_match * 120, 60),
+                   color=TEAM_COLOURS["Manchester United"], marker="*",
+                   edgecolors="black", linewidths=0.8, zorder=5)
+        ax.annotate(
+            f"Man Utd 25/26 ({mu25_goals_per_match:.1f} gpg, {pos_str})",
+            (x, y), fontsize=7.5, ha="center", va="bottom", fontweight="bold",
+            color=TEAM_COLOURS["Manchester United"],
+            xytext=(0, 5), textcoords="offset points",
+        )
+
     # ── Chart 1: Four-quadrant — attack quality vs defensive quality ─────────
     st.markdown("### Shot quality: attack vs defence")
     st.caption(
@@ -674,6 +737,8 @@ with tab8:
         )
     ax.axvline(mean_x, color="grey", linestyle="--", linewidth=0.8, zorder=1)
     ax.axhline(mean_y, color="grey", linestyle="--", linewidth=0.8, zorder=1)
+    if mu25_available:
+        plot_mu25_overlay(ax, mu25_xg_shot_against, mu25_xg_shot_for)
 
     # Quadrant labels — placed after drawing so limits are set
     x_lo, x_hi = ax.get_xlim()
@@ -755,6 +820,8 @@ with tab8:
         )
     ax.axvline(mean_vol,  color="grey", linestyle="--", linewidth=0.8, zorder=1)
     ax.axhline(mean_qual, color="grey", linestyle="--", linewidth=0.8, zorder=1)
+    if mu25_available:
+        plot_mu25_overlay(ax, mu25_shots_per_match, mu25_xg_shot_for)
 
     x_lo, x_hi = ax.get_xlim()
     y_lo, y_hi = ax.get_ylim()
@@ -774,3 +841,187 @@ with tab8:
     plt.tight_layout()
     st.pyplot(fig)
     plt.close(fig)
+
+# ── Tab 9: Man Utd Deep Dive ────────────────────────────────────────────────
+with tab9:
+    st.subheader("Manchester United — attacking performance over time")
+    st.caption(
+        "Season-by-season breakdown of United's chance creation quality and clinical finishing "
+        "across all seasons in the dataset. League averages shown as dashed lines for context. "
+        "This tab always uses the full dataset regardless of the sidebar season filter."
+    )
+
+    MU_TEAM = "Manchester United"
+    MU_RED   = "#DA291C"
+    AVG_GREY = "#888888"
+
+    # ── Build per-season, per-team stats from the unfiltered dataset ─────────
+    _df = df_all.copy()
+    _df["shooting_team"]  = np.where(_df["side"] == "h", _df["home_team"], _df["away_team"])
+    _df["defending_team"] = np.where(_df["side"] == "h", _df["away_team"], _df["home_team"])
+
+    _attack = (
+        _df.groupby(["season", "shooting_team"])
+        .agg(
+            shots_for=("id", "count"),
+            goals_for=("result", lambda x: (x == "Goal").sum()),
+            xg_for=("xg", "sum"),
+        )
+    )
+    _attack.index.names = ["season", "team"]
+
+    _home_m = _df.groupby(["season", "home_team"])["match_id"].nunique()
+    _home_m.index.names = ["season", "team"]
+    _away_m = _df.groupby(["season", "away_team"])["match_id"].nunique()
+    _away_m.index.names = ["season", "team"]
+    _matches = _home_m.add(_away_m, fill_value=0).rename("matches")
+
+    _ts = _attack.join(_matches)
+    _ts["xg_per_shot"]     = _ts["xg_for"]    / _ts["shots_for"]
+    _ts["shots_per_match"] = _ts["shots_for"]  / _ts["matches"]
+    _ts["xg_per_match"]    = _ts["xg_for"]     / _ts["matches"]
+    _ts["goals_per_match"] = _ts["goals_for"]  / _ts["matches"]
+    _ts["finishing_diff"]  = (_ts["goals_for"] - _ts["xg_for"]) / _ts["matches"]
+
+    _ts_reset = _ts.reset_index()
+    league_avg = (
+        _ts_reset.groupby("season")[
+            ["xg_per_shot", "shots_per_match", "xg_per_match", "goals_per_match", "finishing_diff"]
+        ].mean()
+        .sort_index()
+    )
+
+    utd = _ts_reset[_ts_reset["team"] == MU_TEAM].set_index("season").sort_index()
+
+    if utd.empty:
+        st.warning("No Manchester United data found in the dataset.")
+    else:
+        seasons_x = utd.index.tolist()
+        lg_aligned = league_avg.loc[seasons_x]
+        x_pos = np.arange(len(seasons_x))
+
+        # ── Chart 1: Chance creation quality + volume ───────────────────────
+        st.markdown("### Chance creation: quality and volume")
+        st.caption(
+            "**Left:** average xG per shot United created — a measure of how dangerous their "
+            "chances were. **Right:** shots attempted per match (volume). Dashed line = league average."
+        )
+
+        fig, axes = plt.subplots(1, 2, figsize=(13, 5))
+
+        for ax, metric, ylabel, title in [
+            (axes[0], "xg_per_shot",    "xG per shot",     "xG per shot created (chance quality)"),
+            (axes[1], "shots_per_match", "Shots per match", "Shots per match (volume)"),
+        ]:
+            ax.plot(x_pos, lg_aligned[metric].values, color=AVG_GREY, linestyle="--",
+                    linewidth=1.5, label="League avg", zorder=1)
+            ax.plot(x_pos, utd[metric].values, color=MU_RED, linewidth=2.5,
+                    marker="o", markersize=7, label="Man Utd", zorder=2)
+            ax.fill_between(x_pos, lg_aligned[metric].values, utd[metric].values,
+                            alpha=0.12, color=MU_RED)
+            ax.set_xticks(x_pos)
+            ax.set_xticklabels(seasons_x, rotation=20, ha="right")
+            ax.set_ylabel(ylabel)
+            ax.set_title(title, fontweight="bold")
+            ax.spines["top"].set_visible(False)
+            ax.spines["right"].set_visible(False)
+            ax.legend(fontsize=9)
+
+        axes[0].yaxis.set_major_formatter(plt.FuncFormatter(lambda v, _: f"{v:.3f}"))
+        plt.suptitle("Manchester United — chance creation", fontsize=13, fontweight="bold")
+        plt.tight_layout()
+        st.pyplot(fig)
+        plt.close(fig)
+
+        # ── Chart 2: Goals vs xG per match (league-adjusted) ────────────────
+        st.markdown("### Clinical finishing: goals scored vs xG per match")
+        st.caption(
+            "Red bars show actual goals per match. Grey bars show **league-adjusted xG per match** "
+            "(xG plus the league-average finishing differential for that season), "
+            "so the gap between bars reflects United's finishing relative to what a typical PL "
+            "team would have scored from the same xG."
+        )
+
+        width = 0.35
+        goals_vals  = utd["goals_per_match"].values
+        adj_xg_vals = utd["xg_per_match"].values + lg_aligned["finishing_diff"].values
+
+        fig, ax = plt.subplots(figsize=(11, 5))
+        ax.bar(x_pos - width / 2, adj_xg_vals, width=width, color="#aaaaaa",
+               alpha=0.9, label="League-adjusted xG per match")
+        ax.bar(x_pos + width / 2, goals_vals,  width=width, color=MU_RED,
+               alpha=0.9, label="Goals per match (actual)")
+
+        def annotate_yoy(ax, positions, values, x_offset):
+            for i, val in enumerate(values):
+                if i == 0:
+                    ax.text(positions[i] + x_offset, val + 0.02, f"{val:.2f}",
+                            ha="center", va="bottom", fontsize=8, color="#333333")
+                else:
+                    prev = values[i - 1]
+                    pct = (val - prev) / prev * 100 if prev else float("nan")
+                    arrow = "▲" if pct >= 0 else "▼"
+                    colour = "#1a7a1a" if pct >= 0 else "#cc0000"
+                    ax.text(positions[i] + x_offset, val + 0.02,
+                            f"{arrow}{abs(pct):.0f}%",
+                            ha="center", va="bottom", fontsize=8, color=colour, fontweight="bold")
+
+        annotate_yoy(ax, x_pos, adj_xg_vals, -width / 2)
+        annotate_yoy(ax, x_pos, goals_vals,  +width / 2)
+
+        ax.set_xticks(x_pos)
+        ax.set_xticklabels(seasons_x, rotation=15, ha="right")
+        ax.set_ylabel("Per match")
+        ax.set_title("Goals vs xG per match — Manchester United (league-adjusted)", fontweight="bold")
+        ax.yaxis.grid(True, linestyle="--", linewidth=0.6, alpha=0.7)
+        ax.set_axisbelow(True)
+        ax.legend(fontsize=9)
+        ax.spines["top"].set_visible(False)
+        ax.spines["right"].set_visible(False)
+        plt.tight_layout()
+        st.pyplot(fig)
+        plt.close(fig)
+
+        # ── Chart 3: Finishing efficiency vs league average ──────────────────
+        st.markdown("### Finishing efficiency vs league average")
+        st.caption(
+            "Each bar shows United's (goals − xG) per match **minus the league average** for that "
+            "season. Zero = finishing at exactly the league average rate. "
+            "Positive (red) = finishing better than the typical PL team; negative (dark) = worse."
+        )
+
+        adj_diff   = utd["finishing_diff"].values - lg_aligned["finishing_diff"].values
+        bar_colours = [MU_RED if v >= 0 else "#1a1a2e" for v in adj_diff]
+        fig, ax = plt.subplots(figsize=(11, 4))
+        ax.bar(x_pos, adj_diff, color=bar_colours, alpha=0.9, zorder=2)
+        ax.axhline(0, color="black", linewidth=0.8, zorder=1)
+        ax.set_xticks(x_pos)
+        ax.set_xticklabels(seasons_x, rotation=15, ha="right")
+        ax.set_ylabel("(Goals − xG) per match vs league avg")
+        ax.set_title("Finishing efficiency relative to league average", fontweight="bold")
+        ax.spines["top"].set_visible(False)
+        ax.spines["right"].set_visible(False)
+        plt.tight_layout()
+        st.pyplot(fig)
+        plt.close(fig)
+
+        # ── Summary table ────────────────────────────────────────────────────
+        st.markdown("### Season summary")
+        _display = utd[["shots_per_match", "xg_per_shot", "xg_per_match",
+                         "goals_per_match", "finishing_diff"]].rename(columns={
+            "shots_per_match": "Shots/match",
+            "xg_per_shot":     "xG/shot",
+            "xg_per_match":    "xG/match",
+            "goals_per_match": "Goals/match",
+            "finishing_diff":  "Goals − xG/match",
+        })
+        st.dataframe(
+            _display.style.format({
+                "Shots/match":      "{:.1f}",
+                "xG/shot":          "{:.3f}",
+                "xG/match":         "{:.2f}",
+                "Goals/match":      "{:.2f}",
+                "Goals − xG/match": "{:+.2f}",
+            }),
+            use_container_width=True,
+        )

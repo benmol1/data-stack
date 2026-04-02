@@ -6,6 +6,8 @@ Sources:
   - Enriched: FBref/StatsBomb (body part, play pattern - added later)
 
 Understat season keys map as follows:
+  "2020" -> 2020/21
+  "2021" -> 2021/22
   "2022" -> 2022/23
   "2023" -> 2023/24
   "2024" -> 2024/25
@@ -17,7 +19,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from understatapi import UnderstatClient
 
 LEAGUE = "EPL"
-SEASONS = ["2022", "2023", "2024", "2025"]
+SEASONS = ["2020", "2021", "2022", "2023", "2024", "2025"]
 MAX_WORKERS = 10  # concurrent threads for match shot fetching
 
 OUTPUT_DIR = Path(__file__).parent / "raw"
