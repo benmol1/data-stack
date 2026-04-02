@@ -17,7 +17,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from understatapi import UnderstatClient
 
 LEAGUE = "EPL"
-SEASONS = ["2022", "2023", "2024"]
+SEASONS = ["2022", "2023", "2024", "2025"]
 MAX_WORKERS = 10  # concurrent threads for match shot fetching
 
 OUTPUT_DIR = Path(__file__).parent / "raw"
@@ -81,9 +81,9 @@ def fetch_shots_for_season(season: str) -> pd.DataFrame:
     return pd.DataFrame(all_shots)
 
 
-def fetch_all_seasons() -> pd.DataFrame:
+def fetch_all_seasons(seasons: list[str]) -> pd.DataFrame:
     frames = []
-    for season in SEASONS:
+    for season in seasons:
         df = fetch_shots_for_season(season)
         frames.append(df)
         print(f"  -> {len(df)} shots fetched for season {season}\n")
@@ -138,10 +138,31 @@ def process(df: pd.DataFrame) -> pd.DataFrame:
 def main():
     print("=== Fetching Premier League shot data from Understat ===\n")
 
-    df_raw = fetch_all_seasons()
-    print(f"Total shots across all seasons: {len(df_raw)}")
+    existing = pd.DataFrame()
+    seasons_to_fetch = SEASONS
 
-    df_shots = process(df_raw)
+    if OUTPUT_PATH.exists():
+        existing = pd.read_csv(OUTPUT_PATH)
+        seasons_present = set(existing["season"].str[:4].unique())
+        print(f"Existing data found for seasons: {sorted(seasons_present)}")
+        seasons_to_fetch = [s for s in SEASONS if s not in seasons_present]
+
+    if not seasons_to_fetch:
+        print("All seasons already present. Nothing to fetch.")
+        return existing
+
+    print(f"Seasons to fetch: {seasons_to_fetch}\n")
+
+    df_raw = fetch_all_seasons(seasons_to_fetch)
+    print(f"Total new shots fetched: {len(df_raw)}")
+
+    df_new = process(df_raw)
+
+    if not existing.empty:
+        df_shots = pd.concat([existing, df_new], ignore_index=True)
+        df_shots = df_shots.sort_values(["match_date", "match_id", "minute"]).reset_index(drop=True)
+    else:
+        df_shots = df_new
 
     df_shots.to_csv(OUTPUT_PATH, index=False)
     print(f"\nSaved to: {OUTPUT_PATH}")
