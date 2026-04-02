@@ -2,12 +2,14 @@
 dbt/target/
 dbt/dbt_packages/
 dbt/*.duckdb
+dbt/logs/*.log
 
 # Python
 __pycache__/
 *.py[cod]
 .venv/
 venv/
+*.png
 
 # OS
 .DS_Store
