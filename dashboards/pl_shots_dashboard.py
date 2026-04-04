@@ -47,9 +47,7 @@ st.sidebar.header("Filters")
 seasons = sorted(df_all["season"].unique())
 selected_seasons = st.sidebar.multiselect("Seasons", seasons, default=seasons)
 
-min_shots = st.sidebar.slider(
-    "Min shots (xG performance charts)", min_value=5, max_value=100, value=20, step=5
-)
+min_shots = st.sidebar.slider("Min shots (xG performance charts)", min_value=5, max_value=100, value=20, step=5)
 
 df = df_all[df_all["season"].isin(selected_seasons)].copy()
 goals = df[df["result"] == "Goal"].copy()
@@ -62,6 +60,7 @@ st.sidebar.metric("Total goals", f"{len(goals):,}")
 conv = len(goals) / len(df) if len(df) else 0
 st.sidebar.metric("Conversion rate", f"{conv:.1%}")
 
+
 # ---------------------------------------------------------------------------
 # Pitch drawing helper
 # ---------------------------------------------------------------------------
@@ -70,22 +69,32 @@ def draw_half_pitch(ax, lw=1.2):
     line_colour = "white"
 
     ax.set_facecolor(pitch_colour)
-    ax.add_patch(
-        patches.Rectangle((52.5, 0), 52.5, 68, fill=False, edgecolor=line_colour, lw=lw, zorder=3)
-    )
+    ax.add_patch(patches.Rectangle((52.5, 0), 52.5, 68, fill=False, edgecolor=line_colour, lw=lw, zorder=3))
     ax.plot([52.5, 52.5], [0, 68], color=line_colour, lw=lw, zorder=3)
     ax.add_patch(
-        patches.Rectangle((88.5, 13.84), 16.5, 40.32, fill=False, edgecolor=line_colour, lw=lw, zorder=3)
+        patches.Rectangle(
+            (88.5, 13.84),
+            16.5,
+            40.32,
+            fill=False,
+            edgecolor=line_colour,
+            lw=lw,
+            zorder=3,
+        )
     )
-    ax.add_patch(
-        patches.Rectangle((99, 24.84), 6, 18.32, fill=False, edgecolor=line_colour, lw=lw, zorder=3)
-    )
-    ax.add_patch(
-        patches.Rectangle((105, 30.34), 2, 7.32, fill=False, edgecolor="gold", lw=lw * 1.5, zorder=3)
-    )
+    ax.add_patch(patches.Rectangle((99, 24.84), 6, 18.32, fill=False, edgecolor=line_colour, lw=lw, zorder=3))
+    ax.add_patch(patches.Rectangle((105, 30.34), 2, 7.32, fill=False, edgecolor="gold", lw=lw * 1.5, zorder=3))
     ax.plot(93.5, 34, "o", color=line_colour, ms=2, zorder=3)
     arc = patches.Arc(
-        (93.5, 34), 18.3, 18.3, angle=0, theta1=128, theta2=232, color=line_colour, lw=lw, zorder=3
+        (93.5, 34),
+        18.3,
+        18.3,
+        angle=0,
+        theta1=128,
+        theta2=232,
+        color=line_colour,
+        lw=lw,
+        zorder=3,
     )
     ax.add_patch(arc)
     ax.set_xlim(50, 107)
@@ -98,46 +107,48 @@ def draw_half_pitch(ax, lw=1.2):
 # Team colours (primary/representative colour for each PL club)
 # ---------------------------------------------------------------------------
 TEAM_COLOURS = {
-    "Arsenal":                  "#EF0107",  # scarlet red
-    "Aston Villa":              "#670E36",  # claret
-    "Bournemouth":              "#000000",  # black (red-black stripes)
-    "Brentford":                "#FF5500",  # orange-red (distinct from pure reds)
-    "Brighton":                 "#0057B8",  # blue
-    "Burnley":                  "#6C1D45",  # dark claret/purple
-    "Chelsea":                  "#034694",  # Chelsea blue
-    "Crystal Palace":           "#1B458F",  # Palace blue
-    "Everton":                  "#003399",  # royal blue
-    "Fulham":                   "#808080",  # grey (white-kit club)
-    "Ipswich":                  "#3A64A3",  # Ipswich blue
-    "Leeds":                    "#FFCD00",  # yellow
-    "Leicester":                "#003090",  # Leicester blue
-    "Liverpool":                "#C8102E",  # Liverpool red
-    "Luton":                    "#F78F1E",  # orange
-    "Manchester City":          "#6CABDD",  # sky blue
-    "Manchester United":        "#DA291C",  # red
-    "Newcastle United":         "#241F20",  # near-black
-    "Nottingham Forest":        "#DD0000",  # Forest red
-    "Sheffield United":         "#EE2737",  # Blades red
-    "Southampton":              "#D71920",  # Saints red
-    "Tottenham":                "#132257",  # navy
-    "West Ham":                 "#7A263A",  # West Ham claret
-    "Wolverhampton Wanderers":  "#FDB913",  # gold
+    "Arsenal": "#EF0107",  # scarlet red
+    "Aston Villa": "#670E36",  # claret
+    "Bournemouth": "#000000",  # black (red-black stripes)
+    "Brentford": "#FF5500",  # orange-red (distinct from pure reds)
+    "Brighton": "#0057B8",  # blue
+    "Burnley": "#6C1D45",  # dark claret/purple
+    "Chelsea": "#034694",  # Chelsea blue
+    "Crystal Palace": "#1B458F",  # Palace blue
+    "Everton": "#003399",  # royal blue
+    "Fulham": "#808080",  # grey (white-kit club)
+    "Ipswich": "#3A64A3",  # Ipswich blue
+    "Leeds": "#FFCD00",  # yellow
+    "Leicester": "#003090",  # Leicester blue
+    "Liverpool": "#C8102E",  # Liverpool red
+    "Luton": "#F78F1E",  # orange
+    "Manchester City": "#6CABDD",  # sky blue
+    "Manchester United": "#DA291C",  # red
+    "Newcastle United": "#241F20",  # near-black
+    "Nottingham Forest": "#DD0000",  # Forest red
+    "Sheffield United": "#EE2737",  # Blades red
+    "Southampton": "#D71920",  # Saints red
+    "Tottenham": "#132257",  # navy
+    "West Ham": "#7A263A",  # West Ham claret
+    "Wolverhampton Wanderers": "#FDB913",  # gold
 }
 
 # ---------------------------------------------------------------------------
 # Tabs
 # ---------------------------------------------------------------------------
-tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8, tab9 = st.tabs([
-    "Season Overview",
-    "Top Scorers",
-    "xG Performance",
-    "Situations & Types",
-    "Goals by Minute",
-    "Shot Map",
-    "Heatmap",
-    "Team Analysis",
-    "Man Utd Deep Dive",
-])
+tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8, tab9 = st.tabs(
+    [
+        "Season Overview",
+        "Top Scorers",
+        "xG Performance",
+        "Situations & Types",
+        "Goals by Minute",
+        "Shot Map",
+        "Heatmap",
+        "Team Analysis",
+        "Man Utd Deep Dive",
+    ]
+)
 
 # ── Tab 1: Season Overview ──────────────────────────────────────────────────
 with tab1:
@@ -207,11 +218,7 @@ with tab2:
             goals=("id", "count"),
             xg=("xg", "sum"),
         )
-        .assign(
-            shots=lambda d: d.index.map(
-                df.groupby("player")["id"].count()
-            )
-        )
+        .assign(shots=lambda d: d.index.map(df.groupby("player")["id"].count()))
         .assign(xg_diff=lambda d: d["goals"] - d["xg"])
         .sort_values("goals", ascending=False)
         .head(n_top)
@@ -287,9 +294,7 @@ with tab3:
 with tab4:
     st.subheader("Situation × shot type")
 
-    metric = st.radio(
-        "Colour by", ["Goals", "Conversion rate"], horizontal=True, key="tab4_metric"
-    )
+    metric = st.radio("Colour by", ["Goals", "Conversion rate"], horizontal=True, key="tab4_metric")
 
     pivot_goals = (
         df.groupby(["situation", "shot_type"])
@@ -299,20 +304,26 @@ with tab4:
     )
     shots_pivot = pivot_goals["shots"].fillna(0).astype(int)
     goals_pivot = pivot_goals["goals"].fillna(0).astype(int)
-    conv_pivot  = (goals_pivot / shots_pivot.replace(0, np.nan)).fillna(0)
+    conv_pivot = (goals_pivot / shots_pivot.replace(0, np.nan)).fillna(0)
 
     if metric == "Goals":
         heat_data = goals_pivot
         cmap = "Blues"
         norm = None
-        fmt_val  = lambda v: f"{int(v):,}"
+
+        def fmt_val(v):
+            return f"{int(v):,}"
+
         cbar_label = "Goals"
     else:
         heat_data = conv_pivot
         cmap = mcolors.LinearSegmentedColormap.from_list("wht_grn", ["white", "#2d5a27"])
         bounds = [0, 0.01, 0.05, 0.10, 0.20, 0.5, 0.75, 1.0]
         norm = mcolors.BoundaryNorm(bounds, ncolors=256)
-        fmt_val  = lambda v: f"{v:.0%}"
+
+        def fmt_val(v):
+            return f"{v:.0%}"
+
         cbar_label = "Conversion rate"
 
     n_rows, n_cols = heat_data.shape
@@ -334,16 +345,24 @@ with tab4:
             norm_val = cell_val / (heat_data.values.max() or 1)
             txt_colour = "white" if norm_val > 0.6 else "black"
             ax.text(
-                c, r,
+                c,
+                r,
                 fmt_val(cell_val),
-                ha="center", va="center",
-                fontsize=11, fontweight="bold", color=txt_colour,
+                ha="center",
+                va="center",
+                fontsize=11,
+                fontweight="bold",
+                color=txt_colour,
             )
             ax.text(
-                c, r + 0.28,
+                c,
+                r + 0.28,
                 f"({n_s:,} shots)",
-                ha="center", va="center",
-                fontsize=7, color=txt_colour, alpha=0.8,
+                ha="center",
+                va="center",
+                fontsize=7,
+                color=txt_colour,
+                alpha=0.8,
             )
 
     cbar = fig.colorbar(im, ax=ax, shrink=0.8, pad=0.02)
@@ -417,11 +436,7 @@ with tab5:
             lambda gd: "Close (GD 0–1)" if gd <= 1 else "Comfortable (GD 2+)"
         )
 
-        second_half_goals = (
-            goals[goals["minute"] > 45]
-            .merge(ht_scores[["ht_state"]], on="match_id")
-            .copy()
-        )
+        second_half_goals = goals[goals["minute"] > 45].merge(ht_scores[["ht_state"]], on="match_id").copy()
         second_half_goals["minute_capped"] = second_half_goals["minute"].clip(upper=95)
 
         states = ["Close (GD 0–1)", "Comfortable (GD 2+)"]
@@ -471,16 +486,30 @@ with tab6:
 
     axes[0].set_facecolor("#2d5a27")
     sc = axes[0].scatter(
-        df["x_m"], df["y_m"],
-        c=df["xg"], cmap="YlOrRd", s=4, alpha=0.3, vmin=0, vmax=0.5, zorder=1,
+        df["x_m"],
+        df["y_m"],
+        c=df["xg"],
+        cmap="YlOrRd",
+        s=4,
+        alpha=0.3,
+        vmin=0,
+        vmax=0.5,
+        zorder=1,
     )
     draw_half_pitch(axes[0], lw=2)
     axes[0].set_title("All shots (coloured by xG)", color="white", fontweight="bold", pad=8)
 
     axes[1].set_facecolor("#2d5a27")
     axes[1].scatter(
-        goals["x_m"], goals["y_m"],
-        c=goals["xg"], cmap="YlOrRd", s=10, alpha=0.5, vmin=0, vmax=0.5, zorder=1,
+        goals["x_m"],
+        goals["y_m"],
+        c=goals["xg"],
+        cmap="YlOrRd",
+        s=10,
+        alpha=0.5,
+        vmin=0,
+        vmax=0.5,
+        zorder=1,
     )
     draw_half_pitch(axes[1], lw=2)
     axes[1].set_title("Goals only (coloured by xG)", color="white", fontweight="bold", pad=8)
@@ -493,7 +522,10 @@ with tab6:
     plt.setp(cbar.ax.yaxis.get_ticklabels(), color="white")
 
     plt.suptitle(
-        "Shot locations — EPL (selected seasons)", color="white", fontsize=13, fontweight="bold"
+        "Shot locations — EPL (selected seasons)",
+        color="white",
+        fontsize=13,
+        fontweight="bold",
     )
     plt.tight_layout()
     st.pyplot(fig)
@@ -530,7 +562,10 @@ with tab7:
 
     fig.patch.set_facecolor("#2d5a27")
     plt.suptitle(
-        "Shot density heatmap — EPL (selected seasons)", color="white", fontsize=13, fontweight="bold"
+        "Shot density heatmap — EPL (selected seasons)",
+        color="white",
+        fontsize=13,
+        fontweight="bold",
     )
     plt.tight_layout()
     st.pyplot(fig)
@@ -542,7 +577,7 @@ with tab8:
 
     # ── Derive shooting/defending team per shot ──────────────────────────────
     df_t = df.copy()
-    df_t["shooting_team"]  = np.where(df_t["side"] == "h", df_t["home_team"], df_t["away_team"])
+    df_t["shooting_team"] = np.where(df_t["side"] == "h", df_t["home_team"], df_t["away_team"])
     df_t["defending_team"] = np.where(df_t["side"] == "h", df_t["away_team"], df_t["home_team"])
 
     attack = (
@@ -570,9 +605,7 @@ with tab8:
     ts = attack.join(defense).join(matches_per_team)
 
     # ── Ever-present filter ──────────────────────────────────────────────────
-    teams_per_season = (
-        df_t.groupby("shooting_team")["season"].nunique().rename("seasons_present")
-    )
+    teams_per_season = df_t.groupby("shooting_team")["season"].nunique().rename("seasons_present")
     ever_present = teams_per_season[teams_per_season == len(selected_seasons)].index
     only_ever_present = st.checkbox(
         f"Only show teams present in all {len(selected_seasons)} selected season(s)",
@@ -581,12 +614,12 @@ with tab8:
     if only_ever_present:
         ts = ts[ts.index.isin(ever_present)]
 
-    ts["xg_per_shot_for"]     = ts["xg_for"]       / ts["shots_for"]
-    ts["xg_per_shot_against"] = ts["xg_against"]    / ts["shots_against"]
-    ts["shots_per_match"]     = ts["shots_for"]     / ts["matches"]
-    ts["goals_per_match"]     = ts["goals_for"]     / ts["matches"]
-    ts["attack_diff"]         = ts["goals_for"]     - ts["xg_for"]       # +ve = overperforming attack
-    ts["defense_diff"]        = ts["xg_against"]    - ts["goals_against"] # +ve = overperforming defence
+    ts["xg_per_shot_for"] = ts["xg_for"] / ts["shots_for"]
+    ts["xg_per_shot_against"] = ts["xg_against"] / ts["shots_against"]
+    ts["shots_per_match"] = ts["shots_for"] / ts["matches"]
+    ts["goals_per_match"] = ts["goals_for"] / ts["matches"]
+    ts["attack_diff"] = ts["goals_for"] - ts["xg_for"]  # +ve = overperforming attack
+    ts["defense_diff"] = ts["xg_against"] - ts["goals_against"]  # +ve = overperforming defence
 
     # ── Derive average league finishing position from match results ───────────
     all_matches = (
@@ -595,13 +628,11 @@ with tab8:
         .reset_index()[["match_id", "season", "home_team", "away_team"]]
     )
     goal_rows = df_t[df_t["result"].isin(["Goal", "OwnGoal"])].copy()
-    goal_rows["home_goal"] = (
-        ((goal_rows["result"] == "Goal")    & (goal_rows["side"] == "h")) |
-        ((goal_rows["result"] == "OwnGoal") & (goal_rows["side"] == "a"))
+    goal_rows["home_goal"] = ((goal_rows["result"] == "Goal") & (goal_rows["side"] == "h")) | (
+        (goal_rows["result"] == "OwnGoal") & (goal_rows["side"] == "a")
     )
-    goal_rows["away_goal"] = (
-        ((goal_rows["result"] == "Goal")    & (goal_rows["side"] == "a")) |
-        ((goal_rows["result"] == "OwnGoal") & (goal_rows["side"] == "h"))
+    goal_rows["away_goal"] = ((goal_rows["result"] == "Goal") & (goal_rows["side"] == "a")) | (
+        (goal_rows["result"] == "OwnGoal") & (goal_rows["side"] == "h")
     )
     match_scores = (
         goal_rows.groupby("match_id")
@@ -611,19 +642,29 @@ with tab8:
     mr = all_matches.merge(match_scores, on="match_id", how="left").fillna(0)
     mr["home_goals"] = mr["home_goals"].astype(int)
     mr["away_goals"] = mr["away_goals"].astype(int)
-    mr["home_pts"] = np.where(mr["home_goals"] > mr["away_goals"], 3,
-                     np.where(mr["home_goals"] == mr["away_goals"], 1, 0))
-    mr["away_pts"] = np.where(mr["away_goals"] > mr["home_goals"], 3,
-                     np.where(mr["home_goals"] == mr["away_goals"], 1, 0))
+    mr["home_pts"] = np.where(
+        mr["home_goals"] > mr["away_goals"],
+        3,
+        np.where(mr["home_goals"] == mr["away_goals"], 1, 0),
+    )
+    mr["away_pts"] = np.where(
+        mr["away_goals"] > mr["home_goals"],
+        3,
+        np.where(mr["home_goals"] == mr["away_goals"], 1, 0),
+    )
     mr["home_gd"] = mr["home_goals"] - mr["away_goals"]
     mr["away_gd"] = -mr["home_gd"]
 
-    home_table = mr.groupby(["season", "home_team"]).agg(
-        pts=("home_pts", "sum"), gd=("home_gd", "sum"), gf=("home_goals", "sum")
-    ).rename_axis(["season", "team"])
-    away_table = mr.groupby(["season", "away_team"]).agg(
-        pts=("away_pts", "sum"), gd=("away_gd", "sum"), gf=("away_goals", "sum")
-    ).rename_axis(["season", "team"])
+    home_table = (
+        mr.groupby(["season", "home_team"])
+        .agg(pts=("home_pts", "sum"), gd=("home_gd", "sum"), gf=("home_goals", "sum"))
+        .rename_axis(["season", "team"])
+    )
+    away_table = (
+        mr.groupby(["season", "away_team"])
+        .agg(pts=("away_pts", "sum"), gd=("away_gd", "sum"), gf=("away_goals", "sum"))
+        .rename_axis(["season", "team"])
+    )
     season_table = (home_table + away_table).reset_index()
     season_table["position"] = (
         season_table.groupby("season")[["pts", "gd", "gf"]]
@@ -631,9 +672,7 @@ with tab8:
         .reset_index(level=0, drop=True)
         .astype(int)
     )
-    avg_position = (
-        season_table.groupby("team")["position"].mean().rename("avg_position")
-    )
+    avg_position = season_table.groupby("team")["position"].mean().rename("avg_position")
     ts = ts.join(avg_position)
 
     def ordinal(n: float) -> str:
@@ -652,64 +691,89 @@ with tab8:
 
     # ── Man Utd 2025/26-only overlay (always from full dataset) ─────────────
     _mu_s = df_all[df_all["season"] == "2025/26"].copy()
-    _mu_s["shooting_team"]  = np.where(_mu_s["side"] == "h", _mu_s["home_team"], _mu_s["away_team"])
+    _mu_s["shooting_team"] = np.where(_mu_s["side"] == "h", _mu_s["home_team"], _mu_s["away_team"])
     _mu_s["defending_team"] = np.where(_mu_s["side"] == "h", _mu_s["away_team"], _mu_s["home_team"])
-    _mu_atk = _mu_s[_mu_s["shooting_team"]  == "Manchester United"]
+    _mu_atk = _mu_s[_mu_s["shooting_team"] == "Manchester United"]
     _mu_def = _mu_s[_mu_s["defending_team"] == "Manchester United"]
     _mu_matches = (
-        _mu_s[_mu_s["home_team"] == "Manchester United"]["match_id"].nunique() +
-        _mu_s[_mu_s["away_team"] == "Manchester United"]["match_id"].nunique()
+        _mu_s[_mu_s["home_team"] == "Manchester United"]["match_id"].nunique()
+        + _mu_s[_mu_s["away_team"] == "Manchester United"]["match_id"].nunique()
     )
     if len(_mu_atk) > 0 and len(_mu_def) > 0 and _mu_matches > 0:
-        mu25_xg_shot_for     = _mu_atk["xg"].sum() / len(_mu_atk)
+        mu25_xg_shot_for = _mu_atk["xg"].sum() / len(_mu_atk)
         mu25_xg_shot_against = _mu_def["xg"].sum() / len(_mu_def)
         mu25_shots_per_match = len(_mu_atk) / _mu_matches
         mu25_goals_per_match = (_mu_atk["result"] == "Goal").sum() / _mu_matches
 
         # Derive 2025/26 league table position from shot data
         _mu_goal_rows = _mu_s[_mu_s["result"] == "Goal"].copy()
-        _mu_goal_rows["home_goal"] = (_mu_goal_rows["side"] == "h")
-        _mu_goal_rows["away_goal"] = (_mu_goal_rows["side"] == "a")
+        _mu_goal_rows["home_goal"] = _mu_goal_rows["side"] == "h"
+        _mu_goal_rows["away_goal"] = _mu_goal_rows["side"] == "a"
         _mu_match_scores = (
             _mu_goal_rows.groupby("match_id")
             .agg(home_goals=("home_goal", "sum"), away_goals=("away_goal", "sum"))
             .reset_index()
         )
         _mu_fixtures = (
-            _mu_s.groupby(["match_id", "home_team", "away_team"]).size()
+            _mu_s.groupby(["match_id", "home_team", "away_team"])
+            .size()
             .reset_index()[["match_id", "home_team", "away_team"]]
         )
         _mu_mr = _mu_fixtures.merge(_mu_match_scores, on="match_id", how="left").fillna(0)
-        _mu_mr["home_pts"] = np.where(_mu_mr["home_goals"] > _mu_mr["away_goals"], 3,
-                             np.where(_mu_mr["home_goals"] == _mu_mr["away_goals"], 1, 0))
-        _mu_mr["away_pts"] = np.where(_mu_mr["away_goals"] > _mu_mr["home_goals"], 3,
-                             np.where(_mu_mr["home_goals"] == _mu_mr["away_goals"], 1, 0))
+        _mu_mr["home_pts"] = np.where(
+            _mu_mr["home_goals"] > _mu_mr["away_goals"],
+            3,
+            np.where(_mu_mr["home_goals"] == _mu_mr["away_goals"], 1, 0),
+        )
+        _mu_mr["away_pts"] = np.where(
+            _mu_mr["away_goals"] > _mu_mr["home_goals"],
+            3,
+            np.where(_mu_mr["home_goals"] == _mu_mr["away_goals"], 1, 0),
+        )
         _mu_mr["home_gd"] = _mu_mr["home_goals"] - _mu_mr["away_goals"]
         _mu_mr["away_gd"] = -_mu_mr["home_gd"]
-        _mu_tbl = (
-            _mu_mr.groupby("home_team").agg(pts=("home_pts", "sum"), gd=("home_gd", "sum"), gf=("home_goals", "sum")).rename_axis("team")
-            + _mu_mr.groupby("away_team").agg(pts=("away_pts", "sum"), gd=("away_gd", "sum"), gf=("away_goals", "sum")).rename_axis("team")
+        _mu_tbl = _mu_mr.groupby("home_team").agg(
+            pts=("home_pts", "sum"), gd=("home_gd", "sum"), gf=("home_goals", "sum")
+        ).rename_axis("team") + _mu_mr.groupby("away_team").agg(
+            pts=("away_pts", "sum"), gd=("away_gd", "sum"), gf=("away_goals", "sum")
+        ).rename_axis("team")
+        _mu_tbl["position"] = (
+            _mu_tbl[["pts", "gd", "gf"]]
+            .apply(lambda col: col.rank(method="min", ascending=False))
+            .mean(axis=1)
+            .astype(int)
         )
-        _mu_tbl["position"] = _mu_tbl[["pts", "gd", "gf"]].apply(
-            lambda col: col.rank(method="min", ascending=False)
-        ).mean(axis=1).astype(int)
-        mu25_position = int(_mu_tbl.loc["Manchester United", "position"]) if "Manchester United" in _mu_tbl.index else None
+        mu25_position = (
+            int(_mu_tbl.loc["Manchester United", "position"]) if "Manchester United" in _mu_tbl.index else None
+        )
 
         mu25_available = True
     else:
         mu25_available = False
-        mu25_position  = None
+        mu25_position = None
 
     def plot_mu25_overlay(ax, x, y):
         pos_str = ordinal(mu25_position) if mu25_position is not None else "?"
-        ax.scatter(x, y, s=max(mu25_goals_per_match * 120, 60),
-                   color=TEAM_COLOURS["Manchester United"], marker="*",
-                   edgecolors="black", linewidths=0.8, zorder=5)
+        ax.scatter(
+            x,
+            y,
+            s=max(mu25_goals_per_match * 120, 60),
+            color=TEAM_COLOURS["Manchester United"],
+            marker="*",
+            edgecolors="black",
+            linewidths=0.8,
+            zorder=5,
+        )
         ax.annotate(
             f"Man Utd 25/26 ({mu25_goals_per_match:.1f} gpg, {pos_str})",
-            (x, y), fontsize=7.5, ha="center", va="bottom", fontweight="bold",
+            (x, y),
+            fontsize=7.5,
+            ha="center",
+            va="bottom",
+            fontweight="bold",
             color=TEAM_COLOURS["Manchester United"],
-            xytext=(0, 5), textcoords="offset points",
+            xytext=(0, 5),
+            textcoords="offset points",
         )
 
     # ── Chart 1: Four-quadrant — attack quality vs defensive quality ─────────
@@ -726,14 +790,22 @@ with tab8:
 
     fig, ax = plt.subplots(figsize=(11, 7))
     ax.scatter(
-        ts["xg_per_shot_against"], ts["xg_per_shot_for"],
-        s=ts["goals_per_match"] * 120, color=bubble_colours, alpha=0.85, zorder=3,
+        ts["xg_per_shot_against"],
+        ts["xg_per_shot_for"],
+        s=ts["goals_per_match"] * 120,
+        color=bubble_colours,
+        alpha=0.85,
+        zorder=3,
     )
     for team, row in ts.iterrows():
         ax.annotate(
-            team_label(team, row), (row["xg_per_shot_against"], row["xg_per_shot_for"]),
-            fontsize=7.5, ha="center", va="bottom",
-            xytext=(0, 5), textcoords="offset points",
+            team_label(team, row),
+            (row["xg_per_shot_against"], row["xg_per_shot_for"]),
+            fontsize=7.5,
+            ha="center",
+            va="bottom",
+            xytext=(0, 5),
+            textcoords="offset points",
         )
     ax.axvline(mean_x, color="grey", linestyle="--", linewidth=0.8, zorder=1)
     ax.axhline(mean_y, color="grey", linestyle="--", linewidth=0.8, zorder=1)
@@ -745,10 +817,40 @@ with tab8:
     y_lo, y_hi = ax.get_ylim()
     pad_x = (x_hi - x_lo) * 0.01
     pad_y = (y_hi - y_lo) * 0.01
-    ax.text(x_lo + pad_x, y_hi - pad_y, "Good attack\nGood defence",  fontsize=8, color="green",  va="top")
-    ax.text(x_hi - pad_x, y_hi - pad_y, "Good attack\nPoor defence",  fontsize=8, color="orange", va="top",    ha="right")
-    ax.text(x_lo + pad_x, y_lo + pad_y, "Poor attack\nGood defence",  fontsize=8, color="orange", va="bottom")
-    ax.text(x_hi - pad_x, y_lo + pad_y, "Poor attack\nPoor defence",  fontsize=8, color="red",    va="bottom", ha="right")
+    ax.text(
+        x_lo + pad_x,
+        y_hi - pad_y,
+        "Good attack\nGood defence",
+        fontsize=8,
+        color="green",
+        va="top",
+    )
+    ax.text(
+        x_hi - pad_x,
+        y_hi - pad_y,
+        "Good attack\nPoor defence",
+        fontsize=8,
+        color="orange",
+        va="top",
+        ha="right",
+    )
+    ax.text(
+        x_lo + pad_x,
+        y_lo + pad_y,
+        "Poor attack\nGood defence",
+        fontsize=8,
+        color="orange",
+        va="bottom",
+    )
+    ax.text(
+        x_hi - pad_x,
+        y_lo + pad_y,
+        "Poor attack\nPoor defence",
+        fontsize=8,
+        color="red",
+        va="bottom",
+        ha="right",
+    )
 
     ax.set_xlabel("Quality of defensive chances allowed")
     ax.set_ylabel("Quality of offensive chances created")
@@ -769,19 +871,28 @@ with tab8:
         "Teams sorted by combined over/underperformance."
     )
 
-    ts_sorted = (
-        ts.assign(combined=ts["attack_diff"] + ts["defense_diff"])
-        .sort_values("combined", ascending=True)
-    )
+    ts_sorted = ts.assign(combined=ts["attack_diff"] + ts["defense_diff"]).sort_values("combined", ascending=True)
 
     fig, ax = plt.subplots(figsize=(11, max(6, len(ts_sorted) * 0.32)))
     y = np.arange(len(ts_sorted))
     height = 0.35
 
-    ax.barh(y + height / 2, ts_sorted["attack_diff"],  height=height,
-            label="Attack (goals − xG for)",            color="#1f77b4", alpha=0.85)
-    ax.barh(y - height / 2, ts_sorted["defense_diff"], height=height,
-            label="Defence (xG against − goals conceded)", color="#2ca02c", alpha=0.85)
+    ax.barh(
+        y + height / 2,
+        ts_sorted["attack_diff"],
+        height=height,
+        label="Attack (goals − xG for)",
+        color="#1f77b4",
+        alpha=0.85,
+    )
+    ax.barh(
+        y - height / 2,
+        ts_sorted["defense_diff"],
+        height=height,
+        label="Defence (xG against − goals conceded)",
+        color="#2ca02c",
+        alpha=0.85,
+    )
 
     ax.set_yticks(y)
     ax.set_yticklabels(ts_sorted.index, fontsize=8)
@@ -804,21 +915,29 @@ with tab8:
         "Top-right = lots of high-quality chances; bottom-left = the opposite."
     )
 
-    mean_vol  = ts["shots_per_match"].mean()
+    mean_vol = ts["shots_per_match"].mean()
     mean_qual = ts["xg_per_shot_for"].mean()
 
     fig, ax = plt.subplots(figsize=(11, 7))
     ax.scatter(
-        ts["shots_per_match"], ts["xg_per_shot_for"],
-        s=ts["goals_per_match"] * 120, color=bubble_colours, alpha=0.85, zorder=3,
+        ts["shots_per_match"],
+        ts["xg_per_shot_for"],
+        s=ts["goals_per_match"] * 120,
+        color=bubble_colours,
+        alpha=0.85,
+        zorder=3,
     )
     for team, row in ts.iterrows():
         ax.annotate(
-            team_label(team, row), (row["shots_per_match"], row["xg_per_shot_for"]),
-            fontsize=7.5, ha="center", va="bottom",
-            xytext=(0, 5), textcoords="offset points",
+            team_label(team, row),
+            (row["shots_per_match"], row["xg_per_shot_for"]),
+            fontsize=7.5,
+            ha="center",
+            va="bottom",
+            xytext=(0, 5),
+            textcoords="offset points",
         )
-    ax.axvline(mean_vol,  color="grey", linestyle="--", linewidth=0.8, zorder=1)
+    ax.axvline(mean_vol, color="grey", linestyle="--", linewidth=0.8, zorder=1)
     ax.axhline(mean_qual, color="grey", linestyle="--", linewidth=0.8, zorder=1)
     if mu25_available:
         plot_mu25_overlay(ax, mu25_shots_per_match, mu25_xg_shot_for)
@@ -827,10 +946,40 @@ with tab8:
     y_lo, y_hi = ax.get_ylim()
     pad_x = (x_hi - x_lo) * 0.01
     pad_y = (y_hi - y_lo) * 0.01
-    ax.text(x_hi - pad_x, y_hi - pad_y, "High volume\nHigh quality",  fontsize=8, color="green",  va="top",    ha="right")
-    ax.text(x_lo + pad_x, y_hi - pad_y, "Low volume\nHigh quality",   fontsize=8, color="orange", va="top")
-    ax.text(x_hi - pad_x, y_lo + pad_y, "High volume\nLow quality",   fontsize=8, color="orange", va="bottom", ha="right")
-    ax.text(x_lo + pad_x, y_lo + pad_y, "Low volume\nLow quality",    fontsize=8, color="red",    va="bottom")
+    ax.text(
+        x_hi - pad_x,
+        y_hi - pad_y,
+        "High volume\nHigh quality",
+        fontsize=8,
+        color="green",
+        va="top",
+        ha="right",
+    )
+    ax.text(
+        x_lo + pad_x,
+        y_hi - pad_y,
+        "Low volume\nHigh quality",
+        fontsize=8,
+        color="orange",
+        va="top",
+    )
+    ax.text(
+        x_hi - pad_x,
+        y_lo + pad_y,
+        "High volume\nLow quality",
+        fontsize=8,
+        color="orange",
+        va="bottom",
+        ha="right",
+    )
+    ax.text(
+        x_lo + pad_x,
+        y_lo + pad_y,
+        "Low volume\nLow quality",
+        fontsize=8,
+        color="red",
+        va="bottom",
+    )
 
     ax.set_xlabel("Shots per match")
     ax.set_ylabel("Average xG per shot")
@@ -852,21 +1001,18 @@ with tab9:
     )
 
     MU_TEAM = "Manchester United"
-    MU_RED   = "#DA291C"
+    MU_RED = "#DA291C"
     AVG_GREY = "#888888"
 
     # ── Build per-season, per-team stats from the unfiltered dataset ─────────
     _df = df_all.copy()
-    _df["shooting_team"]  = np.where(_df["side"] == "h", _df["home_team"], _df["away_team"])
+    _df["shooting_team"] = np.where(_df["side"] == "h", _df["home_team"], _df["away_team"])
     _df["defending_team"] = np.where(_df["side"] == "h", _df["away_team"], _df["home_team"])
 
-    _attack = (
-        _df.groupby(["season", "shooting_team"])
-        .agg(
-            shots_for=("id", "count"),
-            goals_for=("result", lambda x: (x == "Goal").sum()),
-            xg_for=("xg", "sum"),
-        )
+    _attack = _df.groupby(["season", "shooting_team"]).agg(
+        shots_for=("id", "count"),
+        goals_for=("result", lambda x: (x == "Goal").sum()),
+        xg_for=("xg", "sum"),
     )
     _attack.index.names = ["season", "team"]
 
@@ -877,17 +1023,24 @@ with tab9:
     _matches = _home_m.add(_away_m, fill_value=0).rename("matches")
 
     _ts = _attack.join(_matches)
-    _ts["xg_per_shot"]     = _ts["xg_for"]    / _ts["shots_for"]
-    _ts["shots_per_match"] = _ts["shots_for"]  / _ts["matches"]
-    _ts["xg_per_match"]    = _ts["xg_for"]     / _ts["matches"]
-    _ts["goals_per_match"] = _ts["goals_for"]  / _ts["matches"]
-    _ts["finishing_diff"]  = (_ts["goals_for"] - _ts["xg_for"]) / _ts["matches"]
+    _ts["xg_per_shot"] = _ts["xg_for"] / _ts["shots_for"]
+    _ts["shots_per_match"] = _ts["shots_for"] / _ts["matches"]
+    _ts["xg_per_match"] = _ts["xg_for"] / _ts["matches"]
+    _ts["goals_per_match"] = _ts["goals_for"] / _ts["matches"]
+    _ts["finishing_diff"] = (_ts["goals_for"] - _ts["xg_for"]) / _ts["matches"]
 
     _ts_reset = _ts.reset_index()
     league_avg = (
         _ts_reset.groupby("season")[
-            ["xg_per_shot", "shots_per_match", "xg_per_match", "goals_per_match", "finishing_diff"]
-        ].mean()
+            [
+                "xg_per_shot",
+                "shots_per_match",
+                "xg_per_match",
+                "goals_per_match",
+                "finishing_diff",
+            ]
+        ]
+        .mean()
         .sort_index()
     )
 
@@ -910,15 +1063,40 @@ with tab9:
         fig, axes = plt.subplots(1, 2, figsize=(13, 5))
 
         for ax, metric, ylabel, title in [
-            (axes[0], "xg_per_shot",    "xG per shot",     "xG per shot created (chance quality)"),
+            (
+                axes[0],
+                "xg_per_shot",
+                "xG per shot",
+                "xG per shot created (chance quality)",
+            ),
             (axes[1], "shots_per_match", "Shots per match", "Shots per match (volume)"),
         ]:
-            ax.plot(x_pos, lg_aligned[metric].values, color=AVG_GREY, linestyle="--",
-                    linewidth=1.5, label="League avg", zorder=1)
-            ax.plot(x_pos, utd[metric].values, color=MU_RED, linewidth=2.5,
-                    marker="o", markersize=7, label="Man Utd", zorder=2)
-            ax.fill_between(x_pos, lg_aligned[metric].values, utd[metric].values,
-                            alpha=0.12, color=MU_RED)
+            ax.plot(
+                x_pos,
+                lg_aligned[metric].values,
+                color=AVG_GREY,
+                linestyle="--",
+                linewidth=1.5,
+                label="League avg",
+                zorder=1,
+            )
+            ax.plot(
+                x_pos,
+                utd[metric].values,
+                color=MU_RED,
+                linewidth=2.5,
+                marker="o",
+                markersize=7,
+                label="Man Utd",
+                zorder=2,
+            )
+            ax.fill_between(
+                x_pos,
+                lg_aligned[metric].values,
+                utd[metric].values,
+                alpha=0.12,
+                color=MU_RED,
+            )
             ax.set_xticks(x_pos)
             ax.set_xticklabels(seasons_x, rotation=20, ha="right")
             ax.set_ylabel(ylabel)
@@ -943,36 +1121,65 @@ with tab9:
         )
 
         width = 0.35
-        goals_vals  = utd["goals_per_match"].values
+        goals_vals = utd["goals_per_match"].values
         adj_xg_vals = utd["xg_per_match"].values + lg_aligned["finishing_diff"].values
 
         fig, ax = plt.subplots(figsize=(11, 5))
-        ax.bar(x_pos - width / 2, adj_xg_vals, width=width, color="#aaaaaa",
-               alpha=0.9, label="League-adjusted xG per match")
-        ax.bar(x_pos + width / 2, goals_vals,  width=width, color=MU_RED,
-               alpha=0.9, label="Goals per match (actual)")
+        ax.bar(
+            x_pos - width / 2,
+            adj_xg_vals,
+            width=width,
+            color="#aaaaaa",
+            alpha=0.9,
+            label="League-adjusted xG per match",
+        )
+        ax.bar(
+            x_pos + width / 2,
+            goals_vals,
+            width=width,
+            color=MU_RED,
+            alpha=0.9,
+            label="Goals per match (actual)",
+        )
 
         def annotate_yoy(ax, positions, values, x_offset):
             for i, val in enumerate(values):
                 if i == 0:
-                    ax.text(positions[i] + x_offset, val + 0.02, f"{val:.2f}",
-                            ha="center", va="bottom", fontsize=8, color="#333333")
+                    ax.text(
+                        positions[i] + x_offset,
+                        val + 0.02,
+                        f"{val:.2f}",
+                        ha="center",
+                        va="bottom",
+                        fontsize=8,
+                        color="#333333",
+                    )
                 else:
                     prev = values[i - 1]
                     pct = (val - prev) / prev * 100 if prev else float("nan")
                     arrow = "▲" if pct >= 0 else "▼"
                     colour = "#1a7a1a" if pct >= 0 else "#cc0000"
-                    ax.text(positions[i] + x_offset, val + 0.02,
-                            f"{arrow}{abs(pct):.0f}%",
-                            ha="center", va="bottom", fontsize=8, color=colour, fontweight="bold")
+                    ax.text(
+                        positions[i] + x_offset,
+                        val + 0.02,
+                        f"{arrow}{abs(pct):.0f}%",
+                        ha="center",
+                        va="bottom",
+                        fontsize=8,
+                        color=colour,
+                        fontweight="bold",
+                    )
 
         annotate_yoy(ax, x_pos, adj_xg_vals, -width / 2)
-        annotate_yoy(ax, x_pos, goals_vals,  +width / 2)
+        annotate_yoy(ax, x_pos, goals_vals, +width / 2)
 
         ax.set_xticks(x_pos)
         ax.set_xticklabels(seasons_x, rotation=15, ha="right")
         ax.set_ylabel("Per match")
-        ax.set_title("Goals vs xG per match — Manchester United (league-adjusted)", fontweight="bold")
+        ax.set_title(
+            "Goals vs xG per match — Manchester United (league-adjusted)",
+            fontweight="bold",
+        )
         ax.yaxis.grid(True, linestyle="--", linewidth=0.6, alpha=0.7)
         ax.set_axisbelow(True)
         ax.legend(fontsize=9)
@@ -990,7 +1197,7 @@ with tab9:
             "Positive (red) = finishing better than the typical PL team; negative (dark) = worse."
         )
 
-        adj_diff   = utd["finishing_diff"].values - lg_aligned["finishing_diff"].values
+        adj_diff = utd["finishing_diff"].values - lg_aligned["finishing_diff"].values
         bar_colours = [MU_RED if v >= 0 else "#1a1a2e" for v in adj_diff]
         fig, ax = plt.subplots(figsize=(11, 4))
         ax.bar(x_pos, adj_diff, color=bar_colours, alpha=0.9, zorder=2)
@@ -1007,21 +1214,32 @@ with tab9:
 
         # ── Summary table ────────────────────────────────────────────────────
         st.markdown("### Season summary")
-        _display = utd[["shots_per_match", "xg_per_shot", "xg_per_match",
-                         "goals_per_match", "finishing_diff"]].rename(columns={
-            "shots_per_match": "Shots/match",
-            "xg_per_shot":     "xG/shot",
-            "xg_per_match":    "xG/match",
-            "goals_per_match": "Goals/match",
-            "finishing_diff":  "Goals − xG/match",
-        })
+        _display = utd[
+            [
+                "shots_per_match",
+                "xg_per_shot",
+                "xg_per_match",
+                "goals_per_match",
+                "finishing_diff",
+            ]
+        ].rename(
+            columns={
+                "shots_per_match": "Shots/match",
+                "xg_per_shot": "xG/shot",
+                "xg_per_match": "xG/match",
+                "goals_per_match": "Goals/match",
+                "finishing_diff": "Goals − xG/match",
+            }
+        )
         st.dataframe(
-            _display.style.format({
-                "Shots/match":      "{:.1f}",
-                "xG/shot":          "{:.3f}",
-                "xG/match":         "{:.2f}",
-                "Goals/match":      "{:.2f}",
-                "Goals − xG/match": "{:+.2f}",
-            }),
+            _display.style.format(
+                {
+                    "Shots/match": "{:.1f}",
+                    "xG/shot": "{:.3f}",
+                    "xG/match": "{:.2f}",
+                    "Goals/match": "{:.2f}",
+                    "Goals − xG/match": "{:+.2f}",
+                }
+            ),
             use_container_width=True,
         )

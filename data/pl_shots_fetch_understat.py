@@ -38,9 +38,7 @@ def fetch_shots_for_match(match: dict, season: str) -> list[dict]:
         with UnderstatClient() as understat:
             shots = understat.match(match_id).get_shot_data()
     except Exception as exc:
-        print(
-            f"  WARNING: could not fetch shots for match {match_id} ({home} vs {away}): {exc}"
-        )
+        print(f"  WARNING: could not fetch shots for match {match_id} ({home} vs {away}): {exc}")
         return []
 
     rows = []
@@ -64,16 +62,11 @@ def fetch_shots_for_season(season: str) -> pd.DataFrame:
 
     # Only fetch matches that have been played (have shot data)
     played = [m for m in matches if m.get("isResult")]
-    print(
-        f"  {len(played)} played matches found — fetching shots with {MAX_WORKERS} threads..."
-    )
+    print(f"  {len(played)} played matches found — fetching shots with {MAX_WORKERS} threads...")
 
     all_shots = []
     with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
-        futures = {
-            executor.submit(fetch_shots_for_match, match, season): match
-            for match in played
-        }
+        futures = {executor.submit(fetch_shots_for_match, match, season): match for match in played}
         for i, future in enumerate(as_completed(futures), 1):
             rows = future.result()
             all_shots.extend(rows)
@@ -131,9 +124,7 @@ def process(df: pd.DataFrame) -> pd.DataFrame:
         if col in shots.columns:
             shots[col] = pd.to_numeric(shots[col], errors="coerce")
 
-    shots = shots.sort_values(["match_date", "match_id", "minute"]).reset_index(
-        drop=True
-    )
+    shots = shots.sort_values(["match_date", "match_id", "minute"]).reset_index(drop=True)
     return shots
 
 
@@ -176,13 +167,7 @@ def main():
     print(df_shots["result"].value_counts().to_string())
 
     print("\nTop 10 players by shots across all seasons:")
-    print(
-        df_shots.groupby("player")
-        .size()
-        .sort_values(ascending=False)
-        .head(10)
-        .to_string()
-    )
+    print(df_shots.groupby("player").size().sort_values(ascending=False).head(10).to_string())
 
     return df_shots
 

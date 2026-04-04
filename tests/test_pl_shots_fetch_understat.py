@@ -75,16 +75,12 @@ class TestFetchShotsForMatch:
         return mock_client
 
     def test_returns_one_row_per_shot(self):
-        with patch(
-            "pl_shots_fetch_understat.UnderstatClient", return_value=self._make_client()
-        ):
+        with patch("pl_shots_fetch_understat.UnderstatClient", return_value=self._make_client()):
             rows = fetch_shots_for_match(MATCH, "2023")
         assert len(rows) == 2
 
     def test_match_metadata_attached(self):
-        with patch(
-            "pl_shots_fetch_understat.UnderstatClient", return_value=self._make_client()
-        ):
+        with patch("pl_shots_fetch_understat.UnderstatClient", return_value=self._make_client()):
             rows = fetch_shots_for_match(MATCH, "2023")
         for row in rows:
             assert row["match_id"] == "99999"
@@ -94,9 +90,7 @@ class TestFetchShotsForMatch:
             assert row["season"] == "2023/24"
 
     def test_side_field_set_correctly(self):
-        with patch(
-            "pl_shots_fetch_understat.UnderstatClient", return_value=self._make_client()
-        ):
+        with patch("pl_shots_fetch_understat.UnderstatClient", return_value=self._make_client()):
             rows = fetch_shots_for_match(MATCH, "2023")
         sides = {r["player"]: r["side"] for r in rows}
         assert sides["Bukayo Saka"] == "h"
@@ -106,13 +100,9 @@ class TestFetchShotsForMatch:
         mock_client = MagicMock()
         mock_client.__enter__ = MagicMock(return_value=mock_client)
         mock_client.__exit__ = MagicMock(return_value=False)
-        mock_client.match.return_value.get_shot_data.side_effect = Exception(
-            "network error"
-        )
+        mock_client.match.return_value.get_shot_data.side_effect = Exception("network error")
 
-        with patch(
-            "pl_shots_fetch_understat.UnderstatClient", return_value=mock_client
-        ):
+        with patch("pl_shots_fetch_understat.UnderstatClient", return_value=mock_client):
             rows = fetch_shots_for_match(MATCH, "2023")
         assert rows == []
 
@@ -220,12 +210,7 @@ class TestProcess:
 
     def test_all_result_types_preserved(self):
         rows = pd.concat(
-            [
-                _raw_df(result=r, id=str(i))
-                for i, r in enumerate(
-                    ["Goal", "SavedShot", "MissedShots", "BlockedShot"]
-                )
-            ]
+            [_raw_df(result=r, id=str(i)) for i, r in enumerate(["Goal", "SavedShot", "MissedShots", "BlockedShot"])]
         )
         df = process(rows)
         assert set(df["result"]) == {"Goal", "SavedShot", "MissedShots", "BlockedShot"}
@@ -330,21 +315,13 @@ class TestMain:
         stack = ExitStack()
         mock_path = MagicMock()
         mock_path.exists.return_value = csv_exists
-        stack.enter_context(
-            patch("pl_shots_fetch_understat.OUTPUT_PATH", mock_path)
-        )
+        stack.enter_context(patch("pl_shots_fetch_understat.OUTPUT_PATH", mock_path))
         if csv_exists and existing_df is not None:
-            stack.enter_context(
-                patch("pl_shots_fetch_understat.pd.read_csv", return_value=existing_df)
-            )
+            stack.enter_context(patch("pl_shots_fetch_understat.pd.read_csv", return_value=existing_df))
         if new_raw_df is None:
             new_raw_df = _raw_df()
-        stack.enter_context(
-            patch("pl_shots_fetch_understat.fetch_all_seasons", return_value=new_raw_df)
-        )
-        stack.enter_context(
-            patch("pl_shots_fetch_understat.process", side_effect=lambda df: df)
-        )
+        stack.enter_context(patch("pl_shots_fetch_understat.fetch_all_seasons", return_value=new_raw_df))
+        stack.enter_context(patch("pl_shots_fetch_understat.process", side_effect=lambda df: df))
         return stack, mock_path
 
     def test_fetches_all_seasons_when_no_csv(self):
@@ -355,14 +332,17 @@ class TestMain:
                 with patch("pl_shots_fetch_understat.process", side_effect=lambda df: df):
                     main()
             from pl_shots_fetch_understat import SEASONS
+
             mock_fetch.assert_called_once_with(SEASONS)
 
     def test_skips_seasons_already_in_csv(self):
         existing = _processed_df(["2020", "2021", "2022", "2023", "2024"])
-        with patch("pl_shots_fetch_understat.OUTPUT_PATH") as mock_path, \
-             patch("pl_shots_fetch_understat.pd.read_csv", return_value=existing), \
-             patch("pl_shots_fetch_understat.fetch_all_seasons") as mock_fetch, \
-             patch("pl_shots_fetch_understat.process", side_effect=lambda df: df):
+        with (
+            patch("pl_shots_fetch_understat.OUTPUT_PATH") as mock_path,
+            patch("pl_shots_fetch_understat.pd.read_csv", return_value=existing),
+            patch("pl_shots_fetch_understat.fetch_all_seasons") as mock_fetch,
+            patch("pl_shots_fetch_understat.process", side_effect=lambda df: df),
+        ):
             mock_path.exists.return_value = True
             mock_fetch.return_value = _raw_df()
             main()
@@ -370,10 +350,12 @@ class TestMain:
 
     def test_returns_early_when_all_seasons_present(self):
         existing = _processed_df(["2020", "2021", "2022", "2023", "2024", "2025"])
-        with patch("pl_shots_fetch_understat.OUTPUT_PATH") as mock_path, \
-             patch("pl_shots_fetch_understat.pd.read_csv", return_value=existing), \
-             patch("pl_shots_fetch_understat.fetch_all_seasons") as mock_fetch, \
-             patch("pl_shots_fetch_understat.process", side_effect=lambda df: df):
+        with (
+            patch("pl_shots_fetch_understat.OUTPUT_PATH") as mock_path,
+            patch("pl_shots_fetch_understat.pd.read_csv", return_value=existing),
+            patch("pl_shots_fetch_understat.fetch_all_seasons") as mock_fetch,
+            patch("pl_shots_fetch_understat.process", side_effect=lambda df: df),
+        ):
             mock_path.exists.return_value = True
             result = main()
         mock_fetch.assert_not_called()
@@ -382,10 +364,12 @@ class TestMain:
     def test_appends_new_data_to_existing(self):
         existing = _processed_df(["2022", "2023", "2024"])
         new_shot = _raw_df(season="2025/26", match_date="2025-08-10", id="s99")
-        with patch("pl_shots_fetch_understat.OUTPUT_PATH") as mock_path, \
-             patch("pl_shots_fetch_understat.pd.read_csv", return_value=existing), \
-             patch("pl_shots_fetch_understat.fetch_all_seasons", return_value=new_shot), \
-             patch("pl_shots_fetch_understat.process", side_effect=lambda df: df):
+        with (
+            patch("pl_shots_fetch_understat.OUTPUT_PATH") as mock_path,
+            patch("pl_shots_fetch_understat.pd.read_csv", return_value=existing),
+            patch("pl_shots_fetch_understat.fetch_all_seasons", return_value=new_shot),
+            patch("pl_shots_fetch_understat.process", side_effect=lambda df: df),
+        ):
             mock_path.exists.return_value = True
             saved = []
             mock_path.to_csv = MagicMock()

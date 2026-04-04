@@ -33,9 +33,7 @@ con.close()
 os.chdir(_orig_dir)
 
 print(f"Loaded {len(df)} rows from int_pokemon_stats")
-print(
-    f"Legendary: {df['is_legendary'].sum()}  |  Non-legendary: {(~df['is_legendary']).sum()}\n"
-)
+print(f"Legendary: {df['is_legendary'].sum()}  |  Non-legendary: {(~df['is_legendary']).sum()}\n")
 
 # ---------------------------------------------------------------------------
 # 2. Feature selection
@@ -53,9 +51,7 @@ NUMERIC_FEATURES = [
     "generation",
 ]
 BOOL_FEATURES = ["is_dual_type", "is_mega"]
-CAT_FEATURES = [
-    "primary_type"
-]  # secondary_type is sparse; is_dual_type captures its presence
+CAT_FEATURES = ["primary_type"]  # secondary_type is sparse; is_dual_type captures its presence
 
 TARGET = "is_legendary"
 
@@ -94,9 +90,7 @@ model = Pipeline(
 # ---------------------------------------------------------------------------
 # 4. Train / test split (80/20, stratified to preserve class balance)
 # ---------------------------------------------------------------------------
-X_train, X_test, y_train, y_test = train_test_split(
-    X, y, test_size=0.2, stratify=y, random_state=42
-)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, stratify=y, random_state=42)
 
 print(f"Train: {len(X_train)} rows  |  Test: {len(X_test)} rows\n")
 
@@ -107,19 +101,12 @@ model.fit(X_train, y_train)
 y_pred = model.predict(X_test)
 
 print("=== Classification report (test set) ===")
-print(
-    classification_report(y_test, y_pred, target_names=["Non-legendary", "Legendary"])
-)
+print(classification_report(y_test, y_pred, target_names=["Non-legendary", "Legendary"]))
 
 # ---------------------------------------------------------------------------
 # 6. Feature importances
 # ---------------------------------------------------------------------------
-ohe_feature_names = (
-    model.named_steps["prep"]
-    .named_transformers_["cat"]
-    .get_feature_names_out(CAT_FEATURES)
-    .tolist()
-)
+ohe_feature_names = model.named_steps["prep"].named_transformers_["cat"].get_feature_names_out(CAT_FEATURES).tolist()
 all_feature_names = NUMERIC_FEATURES + BOOL_FEATURES + ohe_feature_names
 
 importances = model.named_steps["clf"].feature_importances_
